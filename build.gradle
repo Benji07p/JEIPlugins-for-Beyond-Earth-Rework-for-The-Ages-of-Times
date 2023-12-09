@@ -1,0 +1,125 @@
+buildscript {
+    repositories {
+        maven { url = 'https://maven.minecraftforge.net' }
+        maven { url = 'https://repo.spongepowered.org/maven' }
+        mavenCentral()
+    }
+    dependencies {
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
+        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
+    }
+}
+
+repositories {
+  maven {
+    name = "Progwml6 maven"
+    url = "https://dvs1.progwml6.com/files/maven/"
+  }
+  maven {
+    name = "ModMaven"
+    url = "https://modmaven.k-4u.nl/"
+  }
+}
+
+repositories {
+    maven {
+        url = "https://www.cursemaven.com"
+    }
+}
+
+apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'eclipse'
+apply plugin: 'org.spongepowered.mixin'
+
+version = '1.0'
+group = 'com.yourname.modid'
+archivesBaseName = 'modid'
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+minecraft {
+    mappings channel: 'official', version: '1.18.2'
+    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
+
+    runs {
+        client {
+            workingDirectory project.file('run')
+
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            arg "-mixin.config=beyond_earth.mixin.json"
+
+            mods {
+                examplemod {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        server {
+            workingDirectory project.file('run')
+
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            arg "-mixin.config=beyond_earth.mixin.json"
+
+            mods {
+                examplemod {
+                    source sourceSets.main
+                }
+            }
+        }
+    }
+}
+
+dependencies {
+    minecraft 'net.minecraftforge:forge:1.18.2-40.1.25'
+
+    //Mixin
+    if (System.getProperty("idea.sync.active") != "true") {
+        annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    }
+
+    //JEI
+    compileOnly fg.deobf("mezz.jei:jei-1.18.2:9.7.0.180:api")
+    runtimeOnly fg.deobf("mezz.jei:jei-1.18.2:9.7.0.180")
+
+    //The One Probe
+    implementation fg.deobf("curse.maven:the-one-probe-245211:3671753")
+    
+    //Jade
+    implementation fg.deobf("curse.maven:jade-324717:3681449")
+
+    //TConstruct
+    implementation fg.deobf("slimeknights.mantle:Mantle:1.18.2-1.9.20")
+    implementation fg.deobf("slimeknights.tconstruct:TConstruct:1.18.2-3.5.0.17")
+
+
+    //Mekanism
+    compileOnly fg.deobf("mekanism:Mekanism:1.18.2-10.2.0.459")
+    runtimeOnly fg.deobf("mekanism:Mekanism:1.18.2-10.2.0.459")
+    runtimeOnly fg.deobf("mekanism:Mekanism:1.18.2-10.2.0.459:additions")
+    runtimeOnly fg.deobf("mekanism:Mekanism:1.18.2-10.2.0.459:generators")
+    runtimeOnly fg.deobf("mekanism:Mekanism:1.18.2-10.2.0.459:tools")
+}
+
+mixin {
+    add sourceSets.main, "beyond_earth.mixin-refmap.json"
+}
+
+jar.finalizedBy('reobfJar')
+
+jar {
+    manifest {
+        attributes([
+                "Specification-Title": "beyond_earth",
+                "Specification-Vendor": "MrScautHD",
+                "Specification-Version": "1",
+                "Implementation-Title": project.name,
+                "Implementation-Version": "${version}",
+                "Implementation-Vendor" :"MrScautHD",
+                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+                "MixinConfigs" : "beyond_earth.mixin.json"
+        ])
+    }
+}
